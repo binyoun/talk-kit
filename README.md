@@ -7,7 +7,7 @@ Support tools for giving talks online. Two jobs:
 
 Everything runs on your own machine. Nothing is uploaded anywhere.
 
-**Status:** Backdrop, Frames CLI and Picker (with sharpness and face scoring) all work. The caption band is next — see [PLAN.md](PLAN.md).
+**Status:** Backdrop, Frames CLI and Picker (sharpness and face scoring, caption band) all work. Live capture is the one item left — see [PLAN.md](PLAN.md).
 
 ---
 
@@ -84,7 +84,7 @@ Pick a frame and the crop centres on the face, a little above the middle. Choose
 | Facebook | 1200×630 |
 | X / Threads | 1600×900 |
 
-Planned: an optional caption band that adds the title, name and event in the same style as the Backdrop, so the still reads as a post without further editing.
+**Caption band.** Tick *Caption band* to add the talk title and a "name · event · date" line across the bottom, with the accent bar and light/dark look of the Backdrop. The first time, it fills itself from the last Backdrop you made in this browser; *From Backdrop* refills it any time. Sizes scale with the format, and on Instagram stories the band floats as a card above the reply bar. The caption settings are remembered between visits.
 
 ---
 

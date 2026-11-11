@@ -167,6 +167,10 @@ label.btn { text-decoration: underline; cursor: pointer; }
 .chips button small { display: block; color: var(--muted); font-size: 11px; }
 .chips button.on { background: var(--accent); border-color: var(--accent); color: #fff; }
 .chips button.on small { color: rgba(255, 255, 255, 0.8); }
+.caption-box { border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; margin: 0 0 12px; }
+.caption-box summary { cursor: pointer; list-style-position: inside; }
+.caption-box summary label { display: inline-flex; }
+.caption-box[open] summary { margin-bottom: 10px; }
 .crop-box { display: flex; justify-content: center; background: #000; border-radius: 6px; }
 canvas#crop { display: block; cursor: grab; touch-action: none; }
 canvas#crop:active { cursor: grabbing; }

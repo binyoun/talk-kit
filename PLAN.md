@@ -62,7 +62,7 @@ Same picker, different source: `getUserMedia` / `getDisplayMedia` grabs a frame 
 - [x] 2. Frames CLI (interval + scene modes, manifest)
 - [x] 3. Picker: load folder, contact sheet, crop/export per platform
 - [x] 4. Scoring: sharpness (Laplacian variance) + face (MediaPipe Face Landmarker: present, eyes open, mouth closed, in frame); face-centred crops
-- [ ] 5. Caption band + shared presets across both tools
+- [x] 5. Caption band, filled from the last Backdrop (shared via localStorage, same origin)
 - [ ] 6. Live capture, if still wanted
 
 ## Decisions

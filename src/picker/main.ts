@@ -2,6 +2,8 @@ import { FORMATS, type Format } from '../shared/formats';
 import { slug } from '../shared/text';
 import { sharpness } from './sharpness';
 import { analyseFace, loadFaceModel, type FaceInfo } from './face';
+import { drawCaption, DEFAULT_CAPTION, type Caption } from '../shared/caption';
+import { loadLast as loadBackdrop } from '../backdrop/state';
 
 const $ = <T extends HTMLElement>(id: string): T => {
   const el = document.getElementById(id);
@@ -114,7 +116,6 @@ async function load(files: File[]): Promise<void> {
   for (const f of frames) buildCard(f);
 
   $('source').textContent = source;
-  $('count').textContent = `${frames.length} frames`;
   drop.hidden = true;
   work.hidden = false;
   renderGrid();
@@ -258,7 +259,8 @@ function visible(): Frame[] {
 function renderGrid(): void {
   const list = visible();
   grid.replaceChildren(...list.map((f) => f.card));
-  $('count').textContent = list.length === frames.length ? `${frames.length} frames` : `${list.length} of ${frames.length} frames`;
+  const n = (k: number) => `${k} frame${k === 1 ? '' : 's'}`;
+  $('count').textContent = list.length === frames.length ? n(frames.length) : `${list.length} of ${n(frames.length)}`;
 }
 
 // --- editor ----------------------------------------------------------------------------
@@ -344,7 +346,89 @@ function draw(): void {
   if (!ctx) return;
   const r = cropRect();
   ctx.drawImage(img, r.sx, r.sy, r.sw, r.sh, 0, 0, format.w, format.h);
+  drawCaption(ctx, format.w, format.h, caption);
 }
+
+// --- caption ---------------------------------------------------------------------------
+
+const CAPTION_KEY = 'talk-kit.picker.caption';
+let caption: Caption = (() => {
+  try {
+    const raw = localStorage.getItem(CAPTION_KEY);
+    return raw ? { ...DEFAULT_CAPTION, ...JSON.parse(raw) } : { ...DEFAULT_CAPTION };
+  } catch {
+    return { ...DEFAULT_CAPTION };
+  }
+})();
+
+const cOn = $<HTMLInputElement>('c-on');
+const cTitle = $<HTMLInputElement>('c-title');
+const cLine = $<HTMLInputElement>('c-line');
+const cAccent = $<HTMLInputElement>('c-accent');
+const cModes = Array.from(document.querySelectorAll<HTMLInputElement>('input[name="c-mode"]'));
+
+function fillCaption(): void {
+  cOn.checked = caption.on;
+  cTitle.value = caption.title;
+  cLine.value = caption.line;
+  cAccent.value = caption.accent;
+  for (const r of cModes) r.checked = r.value === caption.mode;
+  if (caption.on) $<HTMLDetailsElement>('caption-box').open = true;
+}
+
+function readCaption(): void {
+  caption = {
+    on: cOn.checked,
+    title: cTitle.value,
+    line: cLine.value,
+    accent: cAccent.value,
+    mode: cModes.find((r) => r.checked)?.value === 'light' ? 'light' : 'dark',
+  };
+  try {
+    localStorage.setItem(CAPTION_KEY, JSON.stringify(caption));
+  } catch {
+    /* ignore */
+  }
+  draw();
+}
+
+/** Fill from the Backdrop's last state; returns false if there is none. */
+function captionFromBackdrop(): boolean {
+  const b = loadBackdrop();
+  if (!b) return false;
+  caption = {
+    ...caption,
+    title: b.title,
+    line: [b.name, b.subtitle].map((s) => s.trim()).filter(Boolean).join(' · '),
+    mode: b.mode,
+    accent: b.accent,
+  };
+  return true;
+}
+
+for (const el of [cOn, cTitle, cLine, cAccent, ...cModes]) {
+  el.addEventListener('input', readCaption);
+  el.addEventListener('change', readCaption);
+}
+cOn.addEventListener('change', () => {
+  if (cOn.checked) {
+    $<HTMLDetailsElement>('caption-box').open = true;
+    // first use: start from the Backdrop rather than empty fields
+    if (!caption.title && !caption.line && captionFromBackdrop()) {
+      caption.on = true;
+      fillCaption();
+      readCaption();
+    }
+  }
+});
+$('c-from-backdrop').addEventListener('click', () => {
+  if (captionFromBackdrop()) {
+    fillCaption();
+    readCaption();
+    flash('Filled from Backdrop');
+  } else flash('No Backdrop saved in this browser yet');
+});
+fillCaption();
 
 function setFormat(f: Format): void {
   format = f;
@@ -416,6 +500,7 @@ function exportOne(f: Format): Promise<void> {
     const r = cropRect();
     format = saved;
     ctx.drawImage(img, r.sx, r.sy, r.sw, r.sh, 0, 0, f.w, f.h);
+    drawCaption(ctx, f.w, f.h, caption);
     c.toBlob(
       (blob) => {
         if (blob) {
