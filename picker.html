@@ -15,10 +15,55 @@
       <a href="https://github.com/binyoun/talk-kit">GitHub</a>
     </nav>
   </header>
-  <main class="landing">
-    <h2>Picker</h2>
-    <p class="lead">Not built yet. It will take a folder of stills from the frames CLI, rank them by sharpness and face, and let you crop and export for each social platform.</p>
-    <p class="hint">Progress and design notes are in <a href="https://github.com/binyoun/talk-kit/blob/main/PLAN.md">PLAN.md</a>.</p>
+
+  <main class="picker">
+    <section id="drop" class="drop">
+      <h2>Drop a folder of stills here</h2>
+      <p>
+        or <label class="btn">choose a folder<input id="f-folder" type="file" webkitdirectory multiple hidden /></label>
+        · <label class="btn">choose images<input id="f-files" type="file" accept="image/*" multiple hidden /></label>
+      </p>
+      <p class="hint">Make stills from a recording first:<br /><code>npm run frames -- recording.mp4 --start 4:30 --end 52:00 --every 15s</code></p>
+      <p class="hint">Frames are scored for sharpness in your browser. Nothing leaves this machine.</p>
+    </section>
+
+    <section id="work" class="work" hidden>
+      <div class="sheet">
+        <div class="toolbar">
+          <strong id="source"></strong>
+          <span id="count" class="hint"></span>
+          <span id="progress" class="hint"></span>
+          <span style="flex:1"></span>
+          <select id="sort">
+            <option value="time">By time</option>
+            <option value="sharp">Sharpest first</option>
+          </select>
+          <button id="clear" type="button" class="ghost">Clear</button>
+        </div>
+        <div id="grid" class="grid"></div>
+      </div>
+
+      <aside class="edit">
+        <p id="edit-empty" class="hint">Pick a frame from the sheet. Use ← → to step through them.</p>
+        <div id="edit-body" hidden>
+          <p class="hint" id="frame-label"></p>
+          <div id="formats" class="chips"></div>
+          <div class="crop-box"><canvas id="crop"></canvas></div>
+          <div class="row" style="margin:10px 0">
+            <label class="check" style="flex:1">Zoom <input id="zoom" type="range" min="1" max="3" step="0.01" value="1" style="flex:1" /></label>
+            <button id="reset-crop" type="button" class="ghost" style="flex:0 0 auto">Reset</button>
+          </div>
+          <div class="actions">
+            <button id="export-one" type="button" class="primary">Export <span id="fmt-name"></span></button>
+            <button id="export-all" type="button">Export all formats</button>
+          </div>
+          <p class="hint">Drag to move the crop, scroll to zoom. JPEG at 92%.</p>
+        </div>
+      </aside>
+    </section>
   </main>
+
+  <div id="flash" role="status"></div>
+  <script type="module" src="/src/picker/main.ts"></script>
 </body>
 </html>

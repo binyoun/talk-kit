@@ -7,7 +7,7 @@ Support tools for giving talks online. Two jobs:
 
 Everything runs on your own machine. Nothing is uploaded anywhere.
 
-**Status:** Backdrop and the Frames CLI work. The Picker is in progress — see [PLAN.md](PLAN.md).
+**Status:** Backdrop, Frames CLI and Picker all work. Face-aware scoring and the caption band are next — see [PLAN.md](PLAN.md).
 
 ---
 
@@ -66,9 +66,11 @@ Output is `frame-0001.jpg …` plus a `manifest.json` with the timestamp of ever
 
 ---
 
-## Picker *(in progress)*
+## Picker
 
-Drop the `stills/` folder on the page. Frames are scored in the browser — sharpness, face present, eyes open, not mid-word — using MediaPipe Face Landmarker running locally. The contact sheet shows the best first. Choose a frame, and a crop box snaps to each target format with the face centred:
+Drop the `stills/` folder on the page (or choose it). If the folder has a `manifest.json` from the Frames CLI, each frame shows its timestamp. Every frame is scored for sharpness in the browser (variance of the Laplacian on a small greyscale copy), so blurred and mid-transition frames sink when you sort by **Sharpest first**. Nothing is uploaded.
+
+Pick a frame, choose a format, drag to position the crop, scroll to zoom, export. **Export all formats** writes one JPEG per size in a go. ← → step through frames.
 
 | Platform | Sizes |
 |---|---|
@@ -77,7 +79,7 @@ Drop the `stills/` folder on the page. Frames are scored in the browser — shar
 | Facebook | 1200×630 |
 | X / Threads | 1600×900 |
 
-An optional caption band adds the title, name and event in the same style as the Backdrop, so the still reads as a post without further editing.
+Planned: face detection with MediaPipe Face Landmarker (face present, eyes open, not mid-word) so the ranking knows about people, and face-centred crops by default. An optional caption band will add the title, name and event in the same style as the Backdrop.
 
 ---
 
@@ -87,7 +89,8 @@ An optional caption band adds the title, name and event in the same style as the
 talk-kit/
   index.html, backdrop.html, picker.html   pages (Vite multi-page)
   src/backdrop/     editor state, canvas renderer
-  src/shared/       theme tokens, platform icons, text helpers
+  src/picker/       folder loading, sharpness scoring, crop + export
+  src/shared/       theme tokens, platform icons, formats, text helpers
   src/styles.css    UI styles
   cli/frames.ts     ffmpeg wrapper
   PLAN.md           design and milestones
