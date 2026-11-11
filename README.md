@@ -7,6 +7,8 @@ Support tools for giving talks online. Two jobs:
 
 Everything runs on your own machine. Nothing is uploaded anywhere.
 
+**Use it online:** **https://binyoun.github.io/talk-kit/** — [Backdrop](https://binyoun.github.io/talk-kit/backdrop.html) · [Picker](https://binyoun.github.io/talk-kit/picker.html). The pages run entirely in your browser; only the Frames CLI needs a local install.
+
 **Status:** Backdrop, Frames CLI and Picker (sharpness and face scoring, caption band) all work. Live capture is the one item left — see [PLAN.md](PLAN.md).
 
 ---
