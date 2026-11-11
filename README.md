@@ -7,7 +7,7 @@ Support tools for giving talks online. Two jobs:
 
 Everything runs on your own machine. Nothing is uploaded anywhere.
 
-**Status:** Backdrop, Frames CLI and Picker all work. Face-aware scoring and the caption band are next — see [PLAN.md](PLAN.md).
+**Status:** Backdrop, Frames CLI and Picker (with sharpness and face scoring) all work. The caption band is next — see [PLAN.md](PLAN.md).
 
 ---
 
@@ -68,9 +68,14 @@ Output is `frame-0001.jpg …` plus a `manifest.json` with the timestamp of ever
 
 ## Picker
 
-Drop the `stills/` folder on the page (or choose it). If the folder has a `manifest.json` from the Frames CLI, each frame shows its timestamp. Every frame is scored for sharpness in the browser (variance of the Laplacian on a small greyscale copy), so blurred and mid-transition frames sink when you sort by **Sharpest first**. Nothing is uploaded.
+Drop the `stills/` folder on the page (or choose it). If the folder has a `manifest.json` from the Frames CLI, each frame shows its timestamp. Every frame is then scored in the browser, in two passes:
 
-Pick a frame, choose a format, drag to position the crop, scroll to zoom, export. **Export all formats** writes one JPEG per size in a go. ← → step through frames.
+1. **Sharpness** — variance of the Laplacian on a small greyscale copy. Blurred and mid-transition frames sink.
+2. **Face** — MediaPipe Face Landmarker, run locally. Is there a face, are the eyes open, is the mouth closed (not mid-word), is the face fully inside the frame.
+
+**Best first** ranks by both (a frame with a good face can reach 100; a frame with no face tops out at 35), **Sharpest first** ignores faces, and the filter shows only frames **with a face** or **without** (slides). Your images never leave the machine; the face model (~4 MB) is fetched once from Google's MediaPipe storage and cached by the browser. If it cannot load, the Picker falls back to sharpness only.
+
+Pick a frame and the crop centres on the face, a little above the middle. Choose a format, drag to adjust, scroll to zoom, export. **Export all formats** writes one JPEG per size in a go. ← → step through frames.
 
 | Platform | Sizes |
 |---|---|
@@ -79,7 +84,7 @@ Pick a frame, choose a format, drag to position the crop, scroll to zoom, export
 | Facebook | 1200×630 |
 | X / Threads | 1600×900 |
 
-Planned: face detection with MediaPipe Face Landmarker (face present, eyes open, not mid-word) so the ranking knows about people, and face-centred crops by default. An optional caption band will add the title, name and event in the same style as the Backdrop.
+Planned: an optional caption band that adds the title, name and event in the same style as the Backdrop, so the still reads as a post without further editing.
 
 ---
 

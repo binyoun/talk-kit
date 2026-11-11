@@ -1,6 +1,7 @@
 import { FORMATS, type Format } from '../shared/formats';
 import { slug } from '../shared/text';
 import { sharpness } from './sharpness';
+import { analyseFace, loadFaceModel, type FaceInfo } from './face';
 
 const $ = <T extends HTMLElement>(id: string): T => {
   const el = document.getElementById(id);
@@ -15,6 +16,8 @@ interface Frame {
   t: number | null;
   label: string;
   sharp: number | null;
+  /** undefined = not analysed yet, null = analysed, no face */
+  face: FaceInfo | null | undefined;
   card: HTMLElement;
 }
 
@@ -24,11 +27,16 @@ interface ManifestFrame {
   label: string;
 }
 
+type SortBy = 'time' | 'sharp' | 'best';
+type Filter = 'all' | 'face' | 'noface';
+
 // --- state ---------------------------------------------------------------------
 
 let frames: Frame[] = [];
 let source = 'stills';
-let sortBy: 'time' | 'sharp' = 'time';
+let sortBy: SortBy = 'time';
+let filter: Filter = 'all';
+let faceModel: boolean | null = null; // null = still loading
 let selected: Frame | null = null;
 let img: HTMLImageElement | null = null; // full-size image of `selected`
 let format: Format = FORMATS[0];
@@ -43,6 +51,7 @@ const cropCanvas = $<HTMLCanvasElement>('crop');
 const zoomInput = $<HTMLInputElement>('zoom');
 const editBody = $<HTMLElement>('edit-body');
 const editEmpty = $<HTMLElement>('edit-empty');
+const progress = $('progress');
 
 // --- loading ---------------------------------------------------------------------
 
@@ -98,6 +107,7 @@ async function load(files: File[]): Promise<void> {
       t: m?.t ?? null,
       label: m?.label ?? file.name.replace(/\.\w+$/, ''),
       sharp: null,
+      face: undefined,
       card: document.createElement('div'),
     };
   });
@@ -119,7 +129,84 @@ function clear(): void {
   grid.replaceChildren();
   editBody.hidden = true;
   editEmpty.hidden = false;
-  $('progress').textContent = '';
+  progress.textContent = '';
+}
+
+// --- scoring -----------------------------------------------------------------------
+
+/**
+ * 0..1 sharpness relative to the sharpest frame in the set, on a log scale so
+ * one very busy frame (a crowd, a dense slide) does not crush the rest to zero.
+ */
+function sharpNorm(f: Frame): number {
+  const max = Math.max(1e-6, ...frames.map((x) => x.sharp ?? 0));
+  return Math.log1p(f.sharp ?? 0) / Math.log1p(max);
+}
+
+/** 0..1 overall rank. Frames with a face can reach 1; frames without top out lower. */
+function overall(f: Frame): number {
+  const s = sharpNorm(f);
+  if (f.face) return 0.35 * s + 0.65 * f.face.score;
+  return 0.35 * s;
+}
+
+async function scoreAll(): Promise<void> {
+  const mine = frames;
+  const modelReady = loadFaceModel().then((ok) => {
+    faceModel = ok;
+    return ok;
+  });
+
+  let done = 0;
+  for (const f of mine) {
+    if (frames !== mine) return; // cleared mid-way
+    try {
+      f.sharp = await sharpness(f.file);
+    } catch {
+      f.sharp = 0;
+    }
+    done++;
+    progress.textContent = `sharpness ${done}/${mine.length}`;
+    if (done % 8 === 0) paintScores();
+  }
+  paintScores();
+
+  progress.textContent = 'loading face model…';
+  const ok = await modelReady;
+  if (frames !== mine) return;
+  if (!ok) {
+    progress.textContent = 'face model unavailable · sharpness only';
+    faceModel = false;
+    return;
+  }
+  done = 0;
+  for (const f of mine) {
+    if (frames !== mine) return;
+    try {
+      f.face = await analyseFace(f.file);
+    } catch {
+      f.face = null;
+    }
+    done++;
+    progress.textContent = `faces ${done}/${mine.length}`;
+    if (done % 4 === 0) paintScores();
+  }
+  progress.textContent = '';
+  paintScores();
+  if (sortBy !== 'time' || filter !== 'all') renderGrid();
+  if (selected) showDetails(selected);
+}
+
+function paintScores(): void {
+  const facesDone = frames.some((f) => f.face !== undefined);
+  for (const f of frames) {
+    if (f.sharp === null) continue;
+    const r = facesDone ? overall(f) : sharpNorm(f);
+    (f.card.querySelector('.bar i') as HTMLElement).style.width = `${Math.round(r * 100)}%`;
+    (f.card.querySelector('.score') as HTMLElement).textContent = `${Math.round(r * 100)}`;
+    const badge = f.card.querySelector('.face') as HTMLElement;
+    badge.hidden = !f.face;
+  }
 }
 
 // --- contact sheet -------------------------------------------------------------------
@@ -137,10 +224,14 @@ function buildCard(f: Frame): void {
   meta.className = 'meta';
   const time = document.createElement('span');
   time.textContent = f.label;
+  const badge = document.createElement('span');
+  badge.className = 'face';
+  badge.textContent = 'face';
+  badge.hidden = true;
   const score = document.createElement('span');
   score.className = 'score';
   score.textContent = '…';
-  meta.append(time, score);
+  meta.append(time, badge, score);
   const bar = document.createElement('div');
   bar.className = 'bar';
   bar.append(document.createElement('i'));
@@ -154,43 +245,20 @@ function buildCard(f: Frame): void {
   });
 }
 
-function sorted(): Frame[] {
-  const list = [...frames];
+function visible(): Frame[] {
+  let list = frames;
+  if (filter === 'face') list = list.filter((f) => f.face);
+  else if (filter === 'noface') list = list.filter((f) => !f.face);
+  list = [...list];
   if (sortBy === 'sharp') list.sort((a, b) => (b.sharp ?? -1) - (a.sharp ?? -1));
+  else if (sortBy === 'best') list.sort((a, b) => overall(b) - overall(a));
   return list;
 }
 
 function renderGrid(): void {
-  grid.replaceChildren(...sorted().map((f) => f.card));
-}
-
-async function scoreAll(): Promise<void> {
-  const progress = $('progress');
-  let done = 0;
-  for (const f of frames) {
-    if (!frames.includes(f)) return; // cleared mid-way
-    try {
-      f.sharp = await sharpness(f.file);
-    } catch {
-      f.sharp = 0;
-    }
-    done++;
-    progress.textContent = `scoring ${done}/${frames.length}`;
-    if (done % 8 === 0) paintScores();
-  }
-  progress.textContent = '';
-  paintScores();
-  if (sortBy === 'sharp') renderGrid();
-}
-
-function paintScores(): void {
-  const max = Math.max(1, ...frames.map((f) => f.sharp ?? 0));
-  for (const f of frames) {
-    if (f.sharp === null) continue;
-    const r = f.sharp / max;
-    (f.card.querySelector('.bar i') as HTMLElement).style.width = `${Math.round(r * 100)}%`;
-    (f.card.querySelector('.score') as HTMLElement).textContent = `${Math.round(r * 100)}`;
-  }
+  const list = visible();
+  grid.replaceChildren(...list.map((f) => f.card));
+  $('count').textContent = list.length === frames.length ? `${frames.length} frames` : `${list.length} of ${frames.length} frames`;
 }
 
 // --- editor ----------------------------------------------------------------------------
@@ -211,12 +279,40 @@ async function select(f: Frame): Promise<void> {
   f.card.scrollIntoView({ block: 'nearest' });
   img = await loadImage(f.url);
   if (selected !== f) return;
-  cx = img.naturalWidth / 2;
-  cy = img.naturalHeight / 2;
+  centre();
   editEmpty.hidden = true;
   editBody.hidden = false;
   $('frame-label').textContent = `${f.label} · ${img.naturalWidth}×${img.naturalHeight}`;
+  showDetails(f);
   draw();
+}
+
+function showDetails(f: Frame): void {
+  const parts: string[] = [];
+  if (f.sharp !== null) parts.push(`sharpness ${Math.round(sharpNorm(f) * 100)}`);
+  if (f.face) {
+    parts.push(
+      `face: eyes ${Math.round(f.face.eyesOpen * 100)} · mouth closed ${Math.round(f.face.mouthClosed * 100)} · in frame ${Math.round(f.face.inFrame * 100)}`,
+    );
+  } else if (f.face === null) parts.push('no face found');
+  else if (faceModel === false) parts.push('face model unavailable');
+  $('details').textContent = parts.join(' · ');
+}
+
+/** Centre the crop on the face if there is one, else on the image. */
+function centre(): void {
+  if (!img) return;
+  const face = selected?.face;
+  if (face) {
+    const cover = Math.max(format.w / img.naturalWidth, format.h / img.naturalHeight);
+    const sh = format.h / (cover * zoom);
+    cx = face.cx * img.naturalWidth;
+    // put the face a little above centre, where portraits want it
+    cy = face.cy * img.naturalHeight + 0.1 * sh;
+  } else {
+    cx = img.naturalWidth / 2;
+    cy = img.naturalHeight / 2;
+  }
 }
 
 function cropRect(): { sx: number; sy: number; sw: number; sh: number } {
@@ -254,6 +350,7 @@ function setFormat(f: Format): void {
   format = f;
   for (const b of Array.from($('formats').children)) b.classList.toggle('on', (b as HTMLElement).dataset.id === f.id);
   $('fmt-name').textContent = `${f.platform} ${f.label} ${f.w}×${f.h}`;
+  if (selected?.face) centre();
   draw();
 }
 
@@ -299,10 +396,7 @@ zoomInput.addEventListener('input', () => {
 $('reset-crop').addEventListener('click', () => {
   zoom = 1;
   zoomInput.value = '1';
-  if (img) {
-    cx = img.naturalWidth / 2;
-    cy = img.naturalHeight / 2;
-  }
+  centre();
   draw();
 });
 window.addEventListener('resize', fitCanvas);
@@ -352,7 +446,7 @@ $('export-all').addEventListener('click', async () => {
 
 window.addEventListener('keydown', (e) => {
   if (!selected || (e.target as HTMLElement).matches('input, select, textarea')) return;
-  const list = sorted();
+  const list = visible();
   const i = list.indexOf(selected);
   if (e.key === 'ArrowRight' && i < list.length - 1) void select(list[i + 1]);
   else if (e.key === 'ArrowLeft' && i > 0) void select(list[i - 1]);
@@ -377,7 +471,11 @@ for (const f of FORMATS) {
 setFormat(FORMATS[0]);
 
 $<HTMLSelectElement>('sort').addEventListener('change', (e) => {
-  sortBy = (e.target as HTMLSelectElement).value === 'sharp' ? 'sharp' : 'time';
+  sortBy = (e.target as HTMLSelectElement).value as SortBy;
+  renderGrid();
+});
+$<HTMLSelectElement>('filter').addEventListener('change', (e) => {
+  filter = (e.target as HTMLSelectElement).value as Filter;
   renderGrid();
 });
 $('clear').addEventListener('click', () => {
@@ -413,3 +511,8 @@ function flash(msg: string): void {
   el.classList.add('on');
   setTimeout(() => el.classList.remove('on'), 1800);
 }
+
+// warm the model while the user is still finding the folder
+void loadFaceModel().then((ok) => {
+  faceModel = ok;
+});

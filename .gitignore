@@ -1,6 +1,7 @@
 node_modules/
 dist/
 stills/
+public/mediapipe/
 *.mp4
 *.mov
 *.mkv

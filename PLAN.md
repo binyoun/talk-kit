@@ -61,7 +61,7 @@ Same picker, different source: `getUserMedia` / `getDisplayMedia` grabs a frame 
 - [x] 1. Scaffold + backdrop maker
 - [x] 2. Frames CLI (interval + scene modes, manifest)
 - [x] 3. Picker: load folder, contact sheet, crop/export per platform
-- [ ] 4. Scoring: sharpness done (Laplacian variance, in-browser); face landmarks next
+- [x] 4. Scoring: sharpness (Laplacian variance) + face (MediaPipe Face Landmarker: present, eyes open, mouth closed, in frame); face-centred crops
 - [ ] 5. Caption band + shared presets across both tools
 - [ ] 6. Live capture, if still wanted
 

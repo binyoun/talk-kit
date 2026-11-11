@@ -24,7 +24,7 @@
         · <label class="btn">choose images<input id="f-files" type="file" accept="image/*" multiple hidden /></label>
       </p>
       <p class="hint">Make stills from a recording first:<br /><code>npm run frames -- recording.mp4 --start 4:30 --end 52:00 --every 15s</code></p>
-      <p class="hint">Frames are scored for sharpness in your browser. Nothing leaves this machine.</p>
+      <p class="hint">Frames are scored in your browser for sharpness and for a face with open eyes and a closed mouth. Your images never leave this machine; the face model (~4 MB) is fetched once from Google's MediaPipe storage.</p>
     </section>
 
     <section id="work" class="work" hidden>
@@ -34,8 +34,14 @@
           <span id="count" class="hint"></span>
           <span id="progress" class="hint"></span>
           <span style="flex:1"></span>
+          <select id="filter">
+            <option value="all">All frames</option>
+            <option value="face">With a face</option>
+            <option value="noface">No face</option>
+          </select>
           <select id="sort">
             <option value="time">By time</option>
+            <option value="best">Best first</option>
             <option value="sharp">Sharpest first</option>
           </select>
           <button id="clear" type="button" class="ghost">Clear</button>
@@ -47,6 +53,7 @@
         <p id="edit-empty" class="hint">Pick a frame from the sheet. Use ← → to step through them.</p>
         <div id="edit-body" hidden>
           <p class="hint" id="frame-label"></p>
+          <p class="hint" id="details"></p>
           <div id="formats" class="chips"></div>
           <div class="crop-box"><canvas id="crop"></canvas></div>
           <div class="row" style="margin:10px 0">

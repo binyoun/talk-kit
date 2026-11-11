@@ -155,7 +155,10 @@ label.btn { text-decoration: underline; cursor: pointer; }
 .thumb:focus-visible { outline: 2px solid var(--accent); }
 .thumb.sel { border-color: var(--accent); }
 .thumb img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; display: block; background: #000; }
-.thumb .meta { display: flex; justify-content: space-between; font-size: 12px; padding: 5px 8px 4px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.thumb .meta { display: flex; gap: 6px; align-items: center; font-size: 12px; padding: 5px 8px 4px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.thumb .meta .score { margin-left: auto; }
+.thumb .face { font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--accent); border: 1px solid currentColor; border-radius: 999px; padding: 0 6px; line-height: 15px; }
+.thumb .face[hidden] { display: none; }
 .thumb .bar { height: 3px; background: var(--line); }
 .thumb .bar i { display: block; height: 100%; width: 0; background: var(--accent); transition: width 0.3s; }
 .edit { position: sticky; top: 16px; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; }
