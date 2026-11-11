@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Backdrop · talk-kit</title>
+  <link rel="stylesheet" href="/src/styles.css" />
+</head>
+<body>
+  <header class="top">
+    <h1><a href="./">talk-kit</a></h1>
+    <nav>
+      <a href="./backdrop.html" aria-current="page">Backdrop</a>
+      <a href="./picker.html">Picker</a>
+      <a href="https://github.com/binyoun/talk-kit">GitHub</a>
+    </nav>
+  </header>
+
+  <main class="editor">
+    <aside class="panel">
+      <fieldset>
+        <legend>Talk</legend>
+        <label class="f"><span>Title</span><textarea id="f-title" rows="2"></textarea></label>
+        <label class="f"><span>Subtitle · event · date</span><input id="f-subtitle" type="text" /></label>
+      </fieldset>
+
+      <fieldset>
+        <legend>You</legend>
+        <label class="f"><span>Name</span><input id="f-name" type="text" /></label>
+        <label class="f"><span>Role · organisation</span><input id="f-role" type="text" /></label>
+      </fieldset>
+
+      <fieldset>
+        <legend>Look</legend>
+        <div class="row" style="margin-bottom:10px">
+          <div class="seg">
+            <label><input type="radio" name="mode" value="dark" /><span>Dark</span></label>
+            <label><input type="radio" name="mode" value="light" /><span>Light</span></label>
+          </div>
+          <label class="check" style="flex:0 0 auto">Accent <input id="f-accent" type="color" /></label>
+        </div>
+        <label class="f"><span>Logo (optional, top-right)</span>
+          <div class="row"><input id="f-logo" type="file" accept="image/*" /><button id="clear-logo" type="button" class="ghost" style="flex:0 0 auto">Clear</button></div>
+        </label>
+      </fieldset>
+
+      <fieldset>
+        <legend>Links <span class="hint" style="display:inline">(up to 4)</span></legend>
+        <div id="links"></div>
+        <button id="add-link" type="button">+ Add link</button>
+      </fieldset>
+
+      <fieldset>
+        <legend>Website QR</legend>
+        <label class="f"><span>URL</span><input id="f-website" type="url" placeholder="https://" /></label>
+        <label class="check"><input id="f-showqr" type="checkbox" /> Show QR code</label>
+        <p class="hint">Video calls compress the background; keep the URL short so the QR stays scannable.</p>
+      </fieldset>
+
+      <fieldset>
+        <legend>Presets</legend>
+        <div class="row">
+          <select id="presets"></select>
+          <button id="save-preset" type="button" style="flex:0 0 auto">Save</button>
+          <button id="delete-preset" type="button" class="ghost" style="flex:0 0 auto">Delete</button>
+        </div>
+        <p class="hint">Presets live in this browser only. The URL in the address bar also holds the whole design: bookmark it or send it to yourself.</p>
+      </fieldset>
+
+      <div class="actions">
+        <button id="export" type="button" class="primary">Export PNG 1920×1080</button>
+        <button id="copy-link" type="button">Copy link</button>
+        <button id="reset" type="button" class="ghost">Reset</button>
+      </div>
+    </aside>
+
+    <section class="stage">
+      <canvas id="preview" width="1920" height="1080"></canvas>
+      <div class="toggles">
+        <label class="check"><input id="f-guide" type="checkbox" checked /> Show seat guide</label>
+        <label class="check"><input id="f-mirror" type="checkbox" /> Mirror (as your own preview shows it)</label>
+      </div>
+      <p class="hint">Zoom, Teams and Meet all accept a 1920×1080 PNG. Your own preview is mirrored; everyone else sees the text the right way round.</p>
+    </section>
+  </main>
+
+  <div id="flash" role="status"></div>
+  <script type="module" src="/src/backdrop/main.ts"></script>
+</body>
+</html>
