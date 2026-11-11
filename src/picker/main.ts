@@ -399,7 +399,10 @@ function captionFromBackdrop(): boolean {
   caption = {
     ...caption,
     title: b.title,
-    line: [b.name, b.subtitle].map((s) => s.trim()).filter(Boolean).join(' · '),
+    line: [b.speakers.map((s) => s.name.trim()).filter(Boolean).join(' & '), b.meta || b.subtitle]
+      .map((s) => s.trim())
+      .filter(Boolean)
+      .join(' · '),
     mode: b.mode,
     accent: b.accent,
   };

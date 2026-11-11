@@ -113,6 +113,16 @@ input:focus, textarea:focus, select:focus { outline: 2px solid var(--accent); ou
 input[type="color"] { width: 44px; height: 36px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); padding: 2px; }
 .check { display: flex; gap: 8px; align-items: center; font-size: 14px; }
 
+.row.wrap { flex-wrap: wrap; }
+.row > .seg { flex: 0 0 auto; }
+.speaker-row { display: grid; grid-template-columns: 1fr 1fr 32px; gap: 6px; margin-bottom: 6px; }
+.swatches { display: flex; gap: 6px; flex: 0 0 auto; }
+.swatch { width: 24px; height: 24px; padding: 0; border-radius: 50%; border: 2px solid var(--line); }
+.swatch.on { border-color: var(--fg); }
+.sub { display: flex; flex-direction: column; gap: 8px; margin: -2px 0 12px; }
+.sub[hidden], [hidden] { display: none !important; }
+.stage .toggles { flex-wrap: wrap; justify-content: center; }
+.stage .toggles select { width: auto; padding: 4px 8px; }
 .link-row { display: grid; grid-template-columns: 130px 1fr 32px; gap: 6px; margin-bottom: 6px; }
 button {
   font: inherit;

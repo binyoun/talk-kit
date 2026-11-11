@@ -28,14 +28,19 @@ For the Frames CLI you also need [ffmpeg](https://ffmpeg.org/) on your path (`br
 
 ## Backdrop
 
-Open `backdrop.html` in the dev server (or the built `dist/`). Fill in the title, your name and role, up to four links, and a website for the QR code. Choose light or dark and an accent colour. Export a **1920×1080 PNG** and set it as your virtual background in Zoom, Teams or Meet.
+Fill in the title, a subtitle and an event line (conference | session | date), the speakers, up to four links, and a website for the QR code. Choose light or dark, an accent colour, a layout and a background. Export a **1920×1080 PNG** and set it as your virtual background in Zoom, Teams or Meet.
 
-What it gets right that a slide-made background usually doesn't:
+The design comes from the backgrounds made for an ISEA2026 online workshop, and from what the stream recording showed about how meeting apps actually display them:
 
-- **You sit in the middle.** Text keeps to the edges; a dashed guide in the preview shows the seat, and is never exported.
+- **Top band layout.** Title, subtitle and event line top-left; name and affiliation top-right. Everything sits above head height, because your shoulders cover the bottom of the frame. (The older *Corners* layout is still there.)
+- **Survives gallery view.** Zoom and Teams crop the sides of your background to fit their tiles: the ISEA stream lost the first letters of the title and the end of the speaker's name. Choose the narrowest tile to survive (16:9, 3:2 or 4:3) and the side margins follow. *Show tile crops* draws what 3:2, 4:3 and square tiles keep.
+- **Co-presenters.** Add up to six speakers; the design stays the same and only the name changes. *Export all speakers* writes one PNG each.
+- **Backgrounds.** A generated night sky (*Shuffle stars* for a new one), a solid colour with an accent glow, or your own artwork or photo with a dim control so the text stays readable.
+- **Spaced-caps or bold titles**, and quick accent swatches.
+- **You sit in the middle.** A dashed seat guide shows where you'll be. It is never exported.
 - **Mirror check.** Zoom shows *you* a mirrored preview but sends everyone else the real thing. A toggle lets you see both.
 - **Links as glyphs.** Platform icons come from [Simple Icons](https://simpleicons.org/) and are drawn inline at export, in a single colour, so they survive video compression.
-- **The URL is the file.** The whole design is encoded in the page address. Bookmark it, paste it into your notes, reopen it for the next talk. Presets also save in the browser.
+- **The URL is the file.** The whole design (except an uploaded image or logo) is encoded in the page address. Bookmark it, paste it into your notes, reopen it for the next talk. Presets also save in the browser.
 - **A "me" preset.** Save your name, role and links once; each new talk only needs a title.
 
 Keep the QR URL short. Video calls compress backgrounds hard, and a dense QR code will not scan.

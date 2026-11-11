@@ -21,27 +21,67 @@
       <fieldset>
         <legend>Talk</legend>
         <label class="f"><span>Title</span><textarea id="f-title" rows="2"></textarea></label>
-        <label class="f"><span>Subtitle · event · date</span><input id="f-subtitle" type="text" /></label>
+        <label class="f"><span>Subtitle</span><input id="f-subtitle" type="text" /></label>
+        <label class="f"><span>Event line</span><input id="f-meta" type="text" placeholder="Conference | Session | Date" /></label>
       </fieldset>
 
       <fieldset>
-        <legend>You</legend>
-        <label class="f"><span>Name</span><input id="f-name" type="text" /></label>
-        <label class="f"><span>Role · organisation</span><input id="f-role" type="text" /></label>
+        <legend>Speakers</legend>
+        <div id="speakers"></div>
+        <button id="add-speaker" type="button">+ Add speaker</button>
+        <p class="hint">Same design, one PNG per speaker, for co-presenters.</p>
       </fieldset>
 
       <fieldset>
         <legend>Look</legend>
-        <div class="row" style="margin-bottom:10px">
-          <div class="seg">
+        <div class="row wrap" style="margin-bottom:10px">
+          <div class="seg" data-key="mode">
             <label><input type="radio" name="mode" value="dark" /><span>Dark</span></label>
             <label><input type="radio" name="mode" value="light" /><span>Light</span></label>
           </div>
           <label class="check" style="flex:0 0 auto">Accent <input id="f-accent" type="color" /></label>
+          <div id="swatches" class="swatches"></div>
         </div>
-        <label class="f"><span>Logo (optional, top-right)</span>
+        <label class="f"><span>Layout</span>
+          <div class="seg">
+            <label><input type="radio" name="layout" value="top" /><span>Top band</span></label>
+            <label><input type="radio" name="layout" value="corners" /><span>Corners</span></label>
+          </div>
+        </label>
+        <label class="f"><span>Title style</span>
+          <div class="seg">
+            <label><input type="radio" name="titleStyle" value="spaced" /><span>Spaced caps</span></label>
+            <label><input type="radio" name="titleStyle" value="bold" /><span>Bold</span></label>
+          </div>
+        </label>
+        <label class="f"><span>Background</span>
+          <div class="seg">
+            <label><input type="radio" name="bg" value="sky" /><span>Night sky</span></label>
+            <label><input type="radio" name="bg" value="solid" /><span>Solid</span></label>
+            <label><input type="radio" name="bg" value="image" /><span>Image</span></label>
+          </div>
+        </label>
+        <div id="bg-sky" class="sub"><button id="shuffle" type="button">Shuffle stars</button></div>
+        <div id="bg-image" class="sub">
+          <input id="f-image" type="file" accept="image/*" />
+          <label class="check">Dim <input id="f-dim" type="range" min="0" max="0.9" step="0.05" style="flex:1" /></label>
+          <p class="hint">Your artwork or a photo. The image is not stored in the link; re-add it after reopening.</p>
+        </div>
+        <label class="f"><span>Logo (optional)</span>
           <div class="row"><input id="f-logo" type="file" accept="image/*" /><button id="clear-logo" type="button" class="ghost" style="flex:0 0 auto">Clear</button></div>
         </label>
+      </fieldset>
+
+      <fieldset>
+        <legend>Fit</legend>
+        <label class="f"><span>Keep text inside a</span>
+          <div class="seg">
+            <label><input type="radio" name="safe" value="16:9" /><span>16:9 view</span></label>
+            <label><input type="radio" name="safe" value="3:2" /><span>3:2 tile</span></label>
+            <label><input type="radio" name="safe" value="4:3" /><span>4:3 tile</span></label>
+          </div>
+        </label>
+        <p class="hint">Gallery view crops the sides of your background. 3:2 suits most Zoom and Teams grids; pick 4:3 for small or many-person grids. Turn on "Show tile crops" to check.</p>
       </fieldset>
 
       <fieldset>
@@ -69,6 +109,7 @@
 
       <div class="actions">
         <button id="export" type="button" class="primary">Export PNG 1920×1080</button>
+        <button id="export-all" type="button">Export all speakers</button>
         <button id="copy-link" type="button">Copy link</button>
         <button id="reset" type="button" class="ghost">Reset</button>
       </div>
@@ -77,10 +118,12 @@
     <section class="stage">
       <canvas id="preview" width="1920" height="1080"></canvas>
       <div class="toggles">
-        <label class="check"><input id="f-guide" type="checkbox" checked /> Show seat guide</label>
-        <label class="check"><input id="f-mirror" type="checkbox" /> Mirror (as your own preview shows it)</label>
+        <label class="check" id="preview-speaker-wrap">Preview <select id="preview-speaker"></select></label>
+        <label class="check"><input id="f-guide" type="checkbox" checked /> Seat guide</label>
+        <label class="check"><input id="f-tiles" type="checkbox" checked /> Show tile crops</label>
+        <label class="check"><input id="f-mirror" type="checkbox" /> Mirror</label>
       </div>
-      <p class="hint">Zoom, Teams and Meet all accept a 1920×1080 PNG. Your own preview is mirrored; everyone else sees the text the right way round.</p>
+      <p class="hint">Guides are never exported. Zoom, Teams and Meet all accept a 1920×1080 PNG. Your own preview is mirrored; everyone else sees the text the right way round.</p>
     </section>
   </main>
 
